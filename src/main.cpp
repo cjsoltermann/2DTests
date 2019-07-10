@@ -61,7 +61,7 @@ void addSquare(float x, float y, float r) {
 	fixtureDef.shape = &dynamicBox;
 	fixtureDef.density = 1.0f;
 	fixtureDef.friction = 0.3f;
-	fixtureDef.restitution = 1.1f;
+	fixtureDef.restitution = 0.9f;
 
 	body->CreateFixture(&fixtureDef);
 
@@ -150,13 +150,25 @@ int main() {
 	addSquare(7.0f, 6.0f, 0.0f);
 	addSquare(8.0f, 9.0f, 0.0f);
 
+	auto previous = std::chrono::high_resolution_clock::now();
+	double lag = 0.0;
 	while (!glfwWindowShouldClose(window)) {
+		auto current = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(current - previous);
+		double elapsed = duration.count();
+		previous = current;
+		lag += elapsed;
+
 		glfwPollEvents();
 
 		glClearColor(1, 1, 1, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		updateSquares();
+		while (lag >= 20) {
+			updateSquares();
+			lag -= 20;
+		}
+
 		drawSquares();
 
 		glfwSwapBuffers(window);
